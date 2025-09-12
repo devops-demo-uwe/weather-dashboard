@@ -9,6 +9,25 @@
     <p class="lead">Your personal weather companion</p>
 </div>
 
+<!-- Display Messages -->
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        @Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="row mt-5">
     <div class="col-md-8 offset-md-2">
         <div class="card">
@@ -16,51 +35,157 @@
                 <h5 class="mb-0">🔍 Search for a City</h5>
             </div>
             <div class="card-body">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Enter city name..." disabled>
-                    <button class="btn btn-primary" type="button" disabled>Get Weather</button>
-                </div>
-                <small class="text-muted mt-2 d-block">Weather features coming soon!</small>
+                <form method="post">
+                    <div class="input-group">
+                        <input asp-for="CityName" type="text" class="form-control" placeholder="Enter city name (e.g., London, New York)..." autocomplete="off">
+                        <button class="btn btn-primary" type="submit" @(Model.IsLoading ? "disabled" : "")>
+                            @if (Model.IsLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Searching...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-search me-2"></i>
+                                <span>Get Weather</span>
+                            }
+                        </button>
+                    </div>
+                    <span asp-validation-for="CityName" class="text-danger small mt-1 d-block"></span>
+                </form>
+                <small class="text-muted mt-2 d-block">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Enter a city name to get current weather conditions
+                </small>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">📍 Current Weather</h6>
-            </div>
-            <div class="card-body text-center">
-                <div class="placeholder-glow">
-                    <span class="placeholder col-6"></span>
-                    <span class="placeholder col-4"></span>
-                    <span class="placeholder col-4"></span>
-                    <span class="placeholder col-6"></span>
+@if (Model.CurrentWeather != null)
+{
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📍 Current Weather - @Model.CurrentWeather.CityName</h6>
                 </div>
-                <p class="text-muted mt-2">Weather data will appear here</p>
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-12">
+                            <h2 class="display-4 text-primary mb-3">
+                                @Model.CurrentWeather.TemperatureCelsius.ToString("F1")°C
+                            </h2>
+                            <h4 class="text-secondary mb-3">
+                                @Model.CurrentWeather.TemperatureFahrenheit.ToString("F1")°F
+                            </h4>
+                            <h5 class="text-capitalize mb-4">
+                                🌤️ @Model.CurrentWeather.Condition.Description
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>💧 Humidity:</strong> @Model.CurrentWeather.Humidity%
+                            </p>
+                            <p class="mb-2">
+                                <strong>💨 Wind Speed:</strong> @Model.CurrentWeather.WindSpeed.ToString("F1") m/s
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <strong>🌡️ Feels Like:</strong> @Model.CurrentWeather.FeelsLikeCelsius.ToString("F1")°C
+                            </p>
+                            <p class="mb-2">
+                                <strong>📊 Pressure:</strong> @Model.CurrentWeather.Pressure hPa
+                            </p>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-3 d-block">
+                        <i class="bi bi-clock me-1"></i>
+                        Last updated: @DateTime.Now.ToString("HH:mm")
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📊 Weather Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 text-info mb-1">@Model.CurrentWeather.Humidity%</div>
+                                <small class="text-muted">Humidity</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 text-info mb-1">@Model.CurrentWeather.Pressure</div>
+                                <small class="text-muted">Pressure (hPa)</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 text-info mb-1">@Model.CurrentWeather.WindSpeed.ToString("F1")</div>
+                                <small class="text-muted">Wind (m/s)</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 text-info mb-1">@Model.CurrentWeather.Visibility</div>
+                                <small class="text-muted">Visibility (m)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">📅 5-Day Forecast</h6>
-            </div>
-            <div class="card-body">
-                <div class="placeholder-glow">
-                    <span class="placeholder col-7"></span>
-                    <span class="placeholder col-4"></span>
-                    <span class="placeholder col-4"></span>
-                    <span class="placeholder col-6"></span>
-                    <span class="placeholder col-8"></span>
+}
+else
+{
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📍 Current Weather</h6>
                 </div>
-                <p class="text-muted mt-2">Forecast will appear here</p>
+                <div class="card-body text-center">
+                    <div class="placeholder-glow">
+                        <span class="placeholder col-6"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-6"></span>
+                    </div>
+                    <p class="text-muted mt-2">Enter a city name above to see current weather</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📅 5-Day Forecast</h6>
+                </div>
+                <div class="card-body">
+                    <div class="placeholder-glow">
+                        <span class="placeholder col-7"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-6"></span>
+                        <span class="placeholder col-8"></span>
+                    </div>
+                    <p class="text-muted mt-2">5-day forecast coming soon!</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
 
 <div class="row mt-4">
     <div class="col-md-12">
@@ -74,8 +199,12 @@
                     <span class="placeholder col-3"></span>
                     <span class="placeholder col-5"></span>
                 </div>
-                <p class="text-muted mt-2">Your favorite cities will be saved here</p>
+                <p class="text-muted mt-2">Favorite cities feature coming soon!</p>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
