@@ -21,7 +21,6 @@ C:\Work\MyWeather\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
 C:\Work\MyWeather\obj\Debug\net9.0\scopedcss\Pages\Shared\_Layout.cshtml.rz.scp.css
 C:\Work\MyWeather\obj\Debug\net9.0\scopedcss\bundle\WeatherDashboard.styles.css
 C:\Work\MyWeather\obj\Debug\net9.0\scopedcss\projectbundle\WeatherDashboard.bundle.scp.css
-C:\Work\MyWeather\obj\Debug\net9.0\compressed\9yrruyvcub-b9sayid5wm.gz
 C:\Work\MyWeather\obj\Debug\net9.0\compressed\wbxlkgu3po-61n19gt1b8.gz
 C:\Work\MyWeather\obj\Debug\net9.0\compressed\r1nbhh6eov-xtxxf3hu2r.gz
 C:\Work\MyWeather\obj\Debug\net9.0\compressed\yep84yvsu8-bqjiyaj88i.gz
@@ -118,3 +117,4 @@ C:\Work\MyWeather\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
 C:\Work\MyWeather\bin\Debug\net9.0\System.Text.Json.dll
 C:\Work\MyWeather\obj\Debug\net9.0\WeatherDashboard.csproj.AssemblyReference.cache
 C:\Work\MyWeather\obj\Debug\net9.0\WeatherD.F987C540.Up2Date
+C:\Work\MyWeather\obj\Debug\net9.0\compressed\9yrruyvcub-tof5ruq55h.gz

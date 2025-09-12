@@ -29,3 +29,89 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Weather Dashboard Custom Styles */
+.weather-card {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.weather-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.temperature-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.weather-detail-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  border: none;
+  transition: transform 0.2s ease-in-out;
+}
+
+.weather-detail-card:hover {
+  transform: scale(1.05);
+}
+
+.weather-metric {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.search-card {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  border: none;
+}
+
+.search-card .card-header {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.alert-custom {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.weather-icon {
+  font-size: 3rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 768px) {
+  .temperature-display {
+    padding: 1.5rem;
+  }
+  
+  .weather-detail-card {
+    margin-bottom: 1rem;
+  }
+  
+  .weather-icon {
+    font-size: 2rem;
+  }
+}
