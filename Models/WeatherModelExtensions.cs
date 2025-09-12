@@ -34,8 +34,8 @@ public static class WeatherModelExtensions
         {
             CityName = apiResponse.Name,
             Country = sys?.Country ?? "Unknown",
-            TemperatureCelsius = KelvinToCelsius(main.Temp),
-            FeelsLikeCelsius = KelvinToCelsius(main.FeelsLike),
+            TemperatureCelsius = Math.Round(main.Temp, 1),
+            FeelsLikeCelsius = Math.Round(main.FeelsLike, 1),
             Condition = new WeatherCondition
             {
                 Id = weather.Id,

@@ -141,25 +141,37 @@ public class Weather
 public class Main
 {
     /// <summary>
-    /// Gets or sets the temperature in Kelvin.
+    /// Gets or sets the temperature. Units depend on the API request:
+    /// - Default: Kelvin
+    /// - Metric: Celsius  
+    /// - Imperial: Fahrenheit
     /// </summary>
     [JsonPropertyName("temp")]
     public double Temp { get; set; }
 
     /// <summary>
-    /// Gets or sets the "feels like" temperature in Kelvin.
+    /// Gets or sets the "feels like" temperature. Units depend on the API request:
+    /// - Default: Kelvin
+    /// - Metric: Celsius
+    /// - Imperial: Fahrenheit
     /// </summary>
     [JsonPropertyName("feels_like")]
     public double FeelsLike { get; set; }
 
     /// <summary>
-    /// Gets or sets the minimum temperature in Kelvin.
+    /// Gets or sets the minimum temperature. Units depend on the API request:
+    /// - Default: Kelvin
+    /// - Metric: Celsius
+    /// - Imperial: Fahrenheit
     /// </summary>
     [JsonPropertyName("temp_min")]
     public double TempMin { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum temperature in Kelvin.
+    /// Gets or sets the maximum temperature. Units depend on the API request:
+    /// - Default: Kelvin
+    /// - Metric: Celsius
+    /// - Imperial: Fahrenheit
     /// </summary>
     [JsonPropertyName("temp_max")]
     public double TempMax { get; set; }
