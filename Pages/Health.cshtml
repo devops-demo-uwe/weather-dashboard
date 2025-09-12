@@ -1,0 +1,93 @@
+@page
+@using Microsoft.Extensions.Diagnostics.HealthChecks
+@model HealthModel
+@{
+    ViewData["Title"] = "System Health";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">🏥 System Health Status</h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.HealthReport != null)
+                    {
+                        <div class="alert @(Model.HealthReport.Status == HealthStatus.Healthy ? "alert-success" : Model.HealthReport.Status == HealthStatus.Degraded ? "alert-warning" : "alert-danger")" role="alert">
+                            <h5 class="alert-heading">
+                                @if (Model.HealthReport.Status == HealthStatus.Healthy)
+                                {
+                                    <text><i class="bi bi-check-circle-fill"></i> System Healthy</text>
+                                }
+                                else if (Model.HealthReport.Status == HealthStatus.Degraded)
+                                {
+                                    <text><i class="bi bi-exclamation-triangle-fill"></i> System Degraded</text>
+                                }
+                                else
+                                {
+                                    <text><i class="bi bi-x-circle-fill"></i> System Unhealthy</text>
+                                }
+                            </h5>
+                            <p class="mb-0">Overall Status: <strong>@Model.HealthReport.Status</strong></p>
+                            <small class="text-muted">Last checked: @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                        </div>
+
+                        <h6>Service Details:</h6>
+                        <div class="row">
+                            @foreach (var entry in Model.HealthReport.Entries)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                @if (entry.Value.Status == HealthStatus.Healthy)
+                                                {
+                                                    <i class="bi bi-check-circle text-success"></i>
+                                                }
+                                                else if (entry.Value.Status == HealthStatus.Degraded)
+                                                {
+                                                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-x-circle text-danger"></i>
+                                                }
+                                                @entry.Key
+                                            </h6>
+                                            <p class="card-text">
+                                                <strong>Status:</strong> @entry.Value.Status<br>
+                                                @if (!string.IsNullOrEmpty(entry.Value.Description))
+                                                {
+                                                    <strong>Description:</strong> @entry.Value.Description<br>
+                                                }
+                                                <strong>Duration:</strong> @entry.Value.Duration.TotalMilliseconds ms
+                                            </p>
+                                            @if (entry.Value.Exception != null)
+                                            {
+                                                <div class="alert alert-danger mt-2">
+                                                    <small><strong>Error:</strong> @entry.Value.Exception.Message</small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i> Unable to retrieve health status.
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <a href="/" class="btn btn-primary">Back to Dashboard</a>
+                    <button onclick="location.reload()" class="btn btn-outline-secondary">Refresh</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

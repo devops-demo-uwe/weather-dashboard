@@ -1,9 +1,26 @@
+using WeatherDashboard.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// TODO: Add weather service configuration here
+// Add weather services with configuration
+builder.Services.AddWeatherServices(builder.Configuration);
+
+// Add enhanced logging configuration
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddFilter("WeatherDashboard", LogLevel.Debug);
+}
+
+// Add options validation
+builder.Services.AddOptionsWithValidateOnStart<WeatherDashboard.Configuration.WeatherApiOptions>();
+
 // TODO: Add Azure Table Storage configuration here
 
 var app = builder.Build();
@@ -15,12 +32,19 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
 
 app.UseHttpsRedirection();
 
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Add health checks endpoint (JSON format for monitoring)
+app.MapHealthChecks("/api/health");
 
 app.MapStaticAssets();
 app.MapRazorPages()
