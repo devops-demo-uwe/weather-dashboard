@@ -1,0 +1,81 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Weather Dashboard";
+}
+
+<div class="text-center">
+    <h1 class="display-4">🌤️ Weather Dashboard</h1>
+    <p class="lead">Your personal weather companion</p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">🔍 Search for a City</h5>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Enter city name..." disabled>
+                    <button class="btn btn-primary" type="button" disabled>Get Weather</button>
+                </div>
+                <small class="text-muted mt-2 d-block">Weather features coming soon!</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📍 Current Weather</h6>
+            </div>
+            <div class="card-body text-center">
+                <div class="placeholder-glow">
+                    <span class="placeholder col-6"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-6"></span>
+                </div>
+                <p class="text-muted mt-2">Weather data will appear here</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📅 5-Day Forecast</h6>
+            </div>
+            <div class="card-body">
+                <div class="placeholder-glow">
+                    <span class="placeholder col-7"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-6"></span>
+                    <span class="placeholder col-8"></span>
+                </div>
+                <p class="text-muted mt-2">Forecast will appear here</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">⭐ Favorite Cities</h6>
+            </div>
+            <div class="card-body">
+                <div class="placeholder-glow">
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-3"></span>
+                    <span class="placeholder col-5"></span>
+                </div>
+                <p class="text-muted mt-2">Your favorite cities will be saved here</p>
+            </div>
+        </div>
+    </div>
+</div>
