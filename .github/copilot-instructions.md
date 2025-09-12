@@ -1,3 +1,13 @@
+- Follow secure coding practices throughout
+
+## Coding Standards
+- Use async/await patterns
+- Enable nullable reference types
+- Use proper error handling with try-catch blocks
+- Implement logging
+- Follow C# naming conventions
+- Add XML documentation for public APIs
+- Use dependency injection throughout
 # Copilot Instructions: ASP.NET Core Weather Dashboard
  
 ## Project Overview
