@@ -29,21 +29,27 @@ A modern ASP.NET Core Razor Pages weather application that provides real-time we
 
 ```
 ├── Configuration/          # Configuration classes
-│   └── WeatherApiOptions.cs      # Strongly-typed weather API configuration
+│   ├── WeatherApiOptions.cs      # Strongly-typed weather API configuration
+│   └── AzureStorageOptions.cs    # Strongly-typed Azure Storage configuration
 ├── Extensions/             # Extension methods
-│   └── WeatherServiceExtensions.cs   # Dependency injection setup
+│   ├── WeatherServiceExtensions.cs   # Weather service dependency injection
+│   └── AzureStorageServiceExtensions.cs   # Azure Storage dependency injection
 ├── Models/                 # Data models
 │   ├── CurrentWeather.cs          # Current weather data model
 │   ├── WeatherCondition.cs        # Weather condition with icons
 │   ├── WeatherApiResponse.cs      # OpenWeatherMap API response models
 │   ├── WeatherModelExtensions.cs  # Model conversion utilities
 │   ├── CitySearchResult.cs        # City search result model
-│   └── FavoriteCity.cs           # Favorite city model (for future use)
+│   ├── FavoriteCity.cs           # Favorite city model
+│   └── FavoriteCityEntity.cs     # Azure Table Storage entity for favorites
 ├── Services/               # Business logic services
 │   ├── IWeatherService.cs         # Weather service interface
 │   ├── WeatherService.cs          # OpenWeatherMap API integration
 │   ├── WeatherServiceException.cs # Custom exception handling
-│   └── WeatherServiceHealthCheck.cs   # Health monitoring
+│   ├── WeatherServiceHealthCheck.cs   # Health monitoring
+│   ├── IFavoriteCityService.cs    # Favorite cities service interface
+│   ├── FavoriteCityService.cs     # Azure Table Storage favorites implementation
+│   └── FavoriteCityServiceException.cs # Favorites service exception handling
 ├── Pages/                  # Razor Pages
 │   ├── Index.cshtml/.cs          # Main weather dashboard page
 │   ├── Health.cshtml/.cs         # Health monitoring page
@@ -65,18 +71,21 @@ A modern ASP.NET Core Razor Pages weather application that provides real-time we
 - **.NET 9** - Latest .NET framework
 - **ASP.NET Core Razor Pages** - Server-side web framework
 - **OpenWeatherMap API** - Weather data provider
+- **Azure Table Storage** - NoSQL cloud storage for favorites
 - **Bootstrap 5** - Responsive CSS framework
 - **Bootstrap Icons** - Modern icon library
 - **System.Text.Json** - High-performance JSON serialization
 - **Microsoft.Extensions.Http** - HTTP client factory
 - **Microsoft.Extensions.Caching.Memory** - In-memory caching
 - **Microsoft.Extensions.Diagnostics.HealthChecks** - Health monitoring
+- **Azure.Data.Tables** - Azure Table Storage client library
 
 ## ⚡ Getting Started
 
 ### Prerequisites
 - .NET 9 SDK
 - OpenWeatherMap API key (free at [openweathermap.org](https://openweathermap.org/api))
+- Azure Storage Emulator (for favorites functionality)
 
 ### Installation
 
@@ -91,12 +100,30 @@ A modern ASP.NET Core Razor Pages weather application that provides real-time we
    dotnet user-secrets set "WeatherApi:ApiKey" "your-api-key-here"
    ```
 
-3. **Run the application**
+3. **Set up Azure Storage Emulator (for favorites)**
+   
+   **Windows (Azurite - recommended):**
+   ```bash
+   # Install Azurite globally
+   npm install -g azurite
+   
+   # Start the storage emulator
+   azurite --silent --location c:\azurite --debug c:\azurite\debug.log
+   ```
+   
+   **Alternative - Azure Storage Emulator (legacy):**
+   - Download and install the [Azure Storage Emulator](https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator)
+   - Start the emulator: `AzureStorageEmulator.exe start`
+   
+   **Verification:**
+   The application will automatically create the `Favorites` table on first run.
+
+4. **Run the application**
    ```bash
    dotnet run
    ```
 
-4. **Open your browser**
+5. **Open your browser**
    Navigate to `http://localhost:5224`
 
 ### Configuration
@@ -112,9 +139,15 @@ The application uses strongly-typed configuration in `appsettings.json`:
     "TimeoutSeconds": 30,
     "EnableCaching": true,
     "CacheDurationMinutes": 10
+  },
+  "AzureStorage": {
+    "ConnectionString": "UseDevelopmentStorage=true",
+    "FavoritesTableName": "Favorites"
   }
 }
 ```
+
+For production, replace the `ConnectionString` with your Azure Storage account connection string.
 
 ## 🧪 Testing
 

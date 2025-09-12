@@ -8,6 +8,9 @@ builder.Services.AddRazorPages();
 // Add weather services with configuration
 builder.Services.AddWeatherServices(builder.Configuration);
 
+// Add Azure Storage services with configuration
+builder.Services.AddAzureStorageServices(builder.Configuration);
+
 // Add enhanced logging configuration
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -20,8 +23,7 @@ if (builder.Environment.IsDevelopment())
 
 // Add options validation
 builder.Services.AddOptionsWithValidateOnStart<WeatherDashboard.Configuration.WeatherApiOptions>();
-
-// TODO: Add Azure Table Storage configuration here
+builder.Services.AddOptionsWithValidateOnStart<WeatherDashboard.Configuration.AzureStorageOptions>();
 
 var app = builder.Build();
 
