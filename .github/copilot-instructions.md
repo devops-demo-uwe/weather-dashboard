@@ -43,6 +43,113 @@ This project is an ASP.NET Core web application that serves as a weather dashboa
 
 ### GitHub Issue Management
 
+### Feature Branch Workflow
+Always use feature branches for new development work. Never commit directly to the main branch.
+
+#### Creating Feature Branches
+Before starting work on any new feature or issue:
+
+```powershell
+# Ensure you're on main branch and up to date
+git checkout main
+git pull origin main
+
+# Create and switch to a new feature branch
+# Use descriptive names with issue number when applicable
+git checkout -b feature/issue-7-current-weather-display
+git checkout -b feature/city-search-functionality
+git checkout -b fix/temperature-conversion-bug
+git checkout -b docs/api-documentation-update
+```
+
+#### Branch Naming Conventions
+- **Features:** `feature/issue-#-brief-description` or `feature/brief-description`
+- **Bug fixes:** `fix/issue-#-brief-description` or `fix/brief-description`
+- **Documentation:** `docs/brief-description`
+- **Refactoring:** `refactor/brief-description`
+- **Tests:** `test/brief-description`
+
+#### Working on Feature Branches
+```powershell
+# Make your changes and commit regularly
+git add .
+git commit -m "feat: implement current weather display models"
+
+# Push your feature branch to remote
+git push -u origin feature/issue-7-current-weather-display
+
+# Continue making commits as needed
+git add .
+git commit -m "feat: add weather API service integration"
+git push
+```
+
+#### Pull Request Workflow
+When your feature is complete:
+
+1. **Push final changes:**
+```powershell
+git push
+```
+
+2. **Create Pull Request:**
+```powershell
+# Create PR using GitHub CLI (recommended)
+gh pr create --title "feat: Implement Current Weather Display (Issue #7)" --body "## 🚀 **Feature Implementation**
+
+### 📋 **Summary**
+Implements current weather display functionality as specified in issue #7.
+
+### 🏗️ **Changes Made:**
+- Added CurrentWeather and WeatherCondition models
+- Implemented WeatherService with OpenWeatherMap API integration
+- Added responsive UI components for weather display
+- Included comprehensive error handling and validation
+
+### ✅ **Testing:**
+- [ ] Unit tests added for weather models
+- [ ] Integration tests for weather service
+- [ ] Manual testing on desktop and mobile
+- [ ] Error scenarios validated
+
+### 🔗 **Related Issues:**
+Closes #7
+
+### 📸 **Screenshots/Demo:**
+(Add screenshots or demo links if applicable)
+
+**Ready for review** ✅"
+
+# Alternative: Create PR through web interface
+gh pr view --web
+```
+
+3. **Remind the user about the PR:**
+Always remind the user that a pull request should be created after feature completion:
+
+> 🔔 **Important Reminder:** 
+> 
+> Your feature implementation is complete! Please create a pull request to merge your changes:
+> 1. Push your final changes: `git push`
+> 2. Create a PR: `gh pr create` or through GitHub web interface
+> 3. Request review from team members
+> 4. Merge after approval and delete the feature branch
+
+#### Post-Merge Cleanup
+After the pull request is merged:
+
+```powershell
+# Switch back to main and pull latest changes
+git checkout main
+git pull origin main
+
+# Delete the local feature branch
+git branch -d feature/issue-7-current-weather-display
+
+# Delete the remote feature branch (if not auto-deleted)
+git push origin --delete feature/issue-7-current-weather-display
+```
+
 ### Setup GitHub CLI
 Ensure GitHub CLI is properly configured and accessible:
 
