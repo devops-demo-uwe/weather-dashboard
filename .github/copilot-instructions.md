@@ -33,7 +33,15 @@ This project is an ASP.NET Core web application that serves as a weather dashboa
 - Secure API key handling
 - Follow secure coding practices throughout
 
-## GitHub Issue Management
+## Development Guidelines
+
+### User Interaction Rules
+- **Never close a GitHub issue without checking with the user first** - Always ask for confirmation before closing any issue, even if implementation appears complete
+- **Do not create more code than requested** - Before adding additional functionality not immediately covered by the specification, ask the user for permission
+- **Stick to the scope** - Focus on the specific requirements and avoid feature creep without explicit user approval
+- **Confirm before major changes** - Always verify with the user before making significant architectural or design decisions
+
+### GitHub Issue Management
 
 ### Setup GitHub CLI
 Ensure GitHub CLI is properly configured and accessible:
@@ -87,8 +95,8 @@ gh issue comment 7 --body "## ✅ Progress Update: [Feature Name] Completed
 gh issue edit 7 --add-label "in-progress"
 gh issue edit 7 --add-label "enhancement"
 
-# Close issue when complete
-gh issue close 7 --comment "✅ Feature implementation completed. All acceptance criteria met."
+# IMPORTANT: Always ask user before closing issues
+# gh issue close 7 --comment "✅ Feature implementation completed. All acceptance criteria met."
 ```
 
 #### Commit Message Standards
