@@ -94,3 +94,4 @@ C:\Work\MyWeather\obj\Debug\net9.0\refint\WeatherDashboard.dll
 C:\Work\MyWeather\obj\Debug\net9.0\WeatherDashboard.pdb
 C:\Work\MyWeather\obj\Debug\net9.0\WeatherDashboard.genruntimeconfig.cache
 C:\Work\MyWeather\obj\Debug\net9.0\ref\WeatherDashboard.dll
+C:\Work\MyWeather\obj\Debug\net9.0\WeatherDashboard.sourcelink.json
