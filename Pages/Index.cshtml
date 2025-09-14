@@ -35,7 +35,7 @@
                 <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search for a City</h5>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" asp-page-handler="">
                     <div class="input-group">
                         <input asp-for="CityName" type="text" class="form-control" placeholder="Enter city name (e.g., London, New York)..." autocomplete="off">
                         <button class="btn btn-light" type="submit" @(Model.IsLoading ? "disabled" : "")>
@@ -295,6 +295,11 @@
                 form.appendChild(tokenInput);
                 document.body.appendChild(form);
                 form.submit();
+                
+                // Clean up URL to prevent parameter persistence
+                if (window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
                 
             } catch (error) {
                 console.error('Error loading favorite weather:', error);

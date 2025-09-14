@@ -86,12 +86,19 @@ public class IndexModel : PageModel
     /// <returns>Page result with weather data or error message</returns>
     public async Task<IActionResult> OnPostAsync()
     {
-        _logger.LogInformation("Weather search initiated for city: {CityName}", CityName);
+        _logger.LogInformation("OnPostAsync called - Weather search initiated for city: {CityName}", CityName ?? "null");
 
         // Clear previous messages
         ErrorMessage = null;
         SuccessMessage = null;
         CurrentWeather = null;
+
+        // Validate that this is actually a search request
+        if (string.IsNullOrEmpty(CityName))
+        {
+            _logger.LogWarning("OnPostAsync called with empty CityName");
+            ModelState.AddModelError(nameof(CityName), "Please enter a city name");
+        }
 
         // Validate model state
         if (!ModelState.IsValid)
@@ -253,9 +260,21 @@ public class IndexModel : PageModel
     /// <returns>Redirect to the same page with weather data loaded</returns>
     public async Task<IActionResult> OnPostLoadFavoriteWeatherAsync(string favoriteId)
     {
+        _logger.LogDebug("OnPostLoadFavoriteWeatherAsync called with favoriteId: '{FavoriteId}'", favoriteId ?? "null");
+        
+        // Check if this is actually meant to be a regular search request
         if (string.IsNullOrEmpty(favoriteId))
         {
-            ErrorMessage = "Invalid favorite city";
+            _logger.LogWarning("OnPostLoadFavoriteWeatherAsync called with empty or null favoriteId - redirecting to regular search");
+            
+            // If CityName is provided, this was probably meant to be a regular search
+            if (!string.IsNullOrEmpty(CityName))
+            {
+                _logger.LogInformation("Redirecting to regular search for city: {CityName}", CityName);
+                return await OnPostAsync();
+            }
+            
+            ErrorMessage = "Invalid favorite city ID provided";
             await LoadFavoriteCitiesAsync();
             return Page();
         }
