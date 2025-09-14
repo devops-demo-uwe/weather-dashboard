@@ -55,7 +55,7 @@ public class FavoriteCityService : IFavoriteCityService
     {
         try
         {
-            _logger.LogDebug("Retrieving all favorite cities");
+            _logger.LogDebug("Retrieving all favorite cities from table storage");
 
             var favorites = new List<FavoriteCity>();
             await foreach (var entity in _tableClient.QueryAsync<FavoriteCityEntity>(
