@@ -6,6 +6,17 @@ using WeatherDashboard.Services;
 
 namespace WeatherDashboard.Pages;
 
+/// <summary>
+/// Request model for adding a favorite city
+/// </summary>
+public class AddFavoriteRequest
+{
+    public required string CityName { get; set; }
+    public required string Country { get; set; }
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+}
+
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
@@ -137,21 +148,41 @@ public class IndexModel : PageModel
     /// <returns>JSON result indicating success or failure</returns>
     public async Task<IActionResult> OnPostAddFavoriteAsync()
     {
-        if (CurrentWeather == null)
-        {
-            return new JsonResult(new { success = false, message = "No current weather data available" });
-        }
-
         try
         {
-            var favoriteCity = await _favoriteCityService.AddFavoriteAsync(
-                CurrentWeather.CityName,
-                CurrentWeather.Country,
-                CurrentWeather.Latitude,
-                CurrentWeather.Longitude);
+            // Read the request body to get weather data
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            
+            if (string.IsNullOrEmpty(requestBody))
+            {
+                return new JsonResult(new { success = false, message = "No weather data provided" });
+            }
 
-            _logger.LogInformation("Added favorite city: {CityName}, {Country}", 
-                favoriteCity.CityName, favoriteCity.Country);
+            var addFavoriteRequest = System.Text.Json.JsonSerializer.Deserialize<AddFavoriteRequest>(requestBody, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (addFavoriteRequest == null)
+            {
+                return new JsonResult(new { success = false, message = "Invalid weather data format" });
+            }
+
+            // Validate the request data
+            if (string.IsNullOrWhiteSpace(addFavoriteRequest.CityName) || string.IsNullOrWhiteSpace(addFavoriteRequest.Country))
+            {
+                return new JsonResult(new { success = false, message = "City name and country are required" });
+            }
+
+            var favoriteCity = await _favoriteCityService.AddFavoriteAsync(
+                addFavoriteRequest.CityName,
+                addFavoriteRequest.Country,
+                addFavoriteRequest.Latitude,
+                addFavoriteRequest.Longitude);
+
+            _logger.LogInformation("Added favorite city: {CityName}, {Country}, Id: {Id}", 
+                favoriteCity.CityName, favoriteCity.Country, favoriteCity.Id);
 
             return new JsonResult(new { 
                 success = true, 
@@ -161,12 +192,17 @@ public class IndexModel : PageModel
         }
         catch (FavoriteCityServiceException ex)
         {
-            _logger.LogWarning(ex, "Failed to add favorite city: {CityName}", CurrentWeather.CityName);
+            _logger.LogWarning(ex, "Failed to add favorite city from request");
             return new JsonResult(new { success = false, message = ex.Message });
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            _logger.LogError(ex, "Invalid JSON format in add favorite request");
+            return new JsonResult(new { success = false, message = "Invalid request format" });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error adding favorite city: {CityName}", CurrentWeather.CityName);
+            _logger.LogError(ex, "Unexpected error adding favorite city from request");
             return new JsonResult(new { success = false, message = "Failed to add city to favorites" });
         }
     }
@@ -259,6 +295,24 @@ public class IndexModel : PageModel
 
         await LoadFavoriteCitiesAsync();
         return Page();
+    }
+
+    /// <summary>
+    /// Handles GET request to fetch favorites via AJAX
+    /// </summary>
+    /// <returns>JSON result with list of favorite cities</returns>
+    public async Task<IActionResult> OnGetFavoritesAsync()
+    {
+        try
+        {
+            var favorites = await _favoriteCityService.GetFavoritesAsync();
+            return new JsonResult(new { success = true, favorites = favorites });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading favorites via AJAX");
+            return new JsonResult(new { success = false, message = "Failed to load favorites" });
+        }
     }
 
     /// <summary>
