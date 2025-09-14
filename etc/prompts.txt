@@ -1,0 +1,13 @@
+Create .github/copilot-instructions.md for ASP.NET Core weather dashboard with current weather, 5-day forecast, city search, favorites, responsive design. Include project overview and core features only.
+
+Add technical requirements section to the copilot-instructions.md: .NET Core 9 with Razor Pages (no MVC), Azure Table Storage with local emulator for development, OpenWeatherMap API integration, Bootstrap 5 for responsive UI.
+
+Add security guidelines section: Use .NET Secret Manager for development, prepare for Azure Key Vault in production, implement input validation, secure API key handling, and follow secure coding practices throughout.
+
+Add coding standards section: Use async/await patterns, nullable reference types enabled, proper error handling with try-catch blocks, implement logging, follow C# naming conventions, add XML documentation for public APIs, use dependency injection throughout. Keep existing content and format for consistency.
+
+Reorganize the sections in logical order, keep the formatting consistent, but do not omit any existing content.
+
+---
+
+Create minimal project structure with basic startup configuration only. No weather features yet - just a running app with placeholder homepage.

@@ -6,15 +6,28 @@ using WeatherDashboard.Services;
 
 namespace WeatherDashboard.Pages;
 
+/// <summary>
+/// Request model for adding a favorite city
+/// </summary>
+public class AddFavoriteRequest
+{
+    public required string CityName { get; set; }
+    public required string Country { get; set; }
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+}
+
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
     private readonly IWeatherService _weatherService;
+    private readonly IFavoriteCityService _favoriteCityService;
 
-    public IndexModel(ILogger<IndexModel> logger, IWeatherService weatherService)
+    public IndexModel(ILogger<IndexModel> logger, IWeatherService weatherService, IFavoriteCityService favoriteCityService)
     {
         _logger = logger;
         _weatherService = weatherService;
+        _favoriteCityService = favoriteCityService;
     }
 
     /// <summary>
@@ -30,6 +43,16 @@ public class IndexModel : PageModel
     /// Current weather data for the searched city
     /// </summary>
     public CurrentWeather? CurrentWeather { get; set; }
+
+    /// <summary>
+    /// List of favorite cities for the user
+    /// </summary>
+    public IEnumerable<FavoriteCity> FavoriteCities { get; set; } = Enumerable.Empty<FavoriteCity>();
+
+    /// <summary>
+    /// Indicates if the current city is already in favorites
+    /// </summary>
+    public bool IsCurrentCityFavorite { get; set; }
 
     /// <summary>
     /// Error message to display to the user
@@ -49,9 +72,12 @@ public class IndexModel : PageModel
     /// <summary>
     /// Handles GET requests to the page
     /// </summary>
-    public void OnGet()
+    public async Task OnGetAsync()
     {
         _logger.LogInformation("Index page loaded");
+        
+        // Load favorite cities
+        await LoadFavoriteCitiesAsync();
     }
 
     /// <summary>
@@ -85,6 +111,9 @@ public class IndexModel : PageModel
             {
                 SuccessMessage = $"Weather data retrieved successfully for {CurrentWeather.CityName}";
                 _logger.LogInformation("Weather data retrieved successfully for {CityName}", CurrentWeather.CityName);
+                
+                // Check if current city is in favorites
+                await CheckIfCurrentCityIsFavoriteAsync();
             }
             else
             {
@@ -107,7 +136,223 @@ public class IndexModel : PageModel
             IsLoading = false;
         }
 
+        // Reload favorite cities
+        await LoadFavoriteCitiesAsync();
+
         return Page();
+    }
+
+    /// <summary>
+    /// Handles POST request to add a city to favorites
+    /// </summary>
+    /// <returns>JSON result indicating success or failure</returns>
+    public async Task<IActionResult> OnPostAddFavoriteAsync()
+    {
+        try
+        {
+            // Read the request body to get weather data
+            using var reader = new StreamReader(Request.Body);
+            var requestBody = await reader.ReadToEndAsync();
+            
+            if (string.IsNullOrEmpty(requestBody))
+            {
+                return new JsonResult(new { success = false, message = "No weather data provided" });
+            }
+
+            var addFavoriteRequest = System.Text.Json.JsonSerializer.Deserialize<AddFavoriteRequest>(requestBody, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (addFavoriteRequest == null)
+            {
+                return new JsonResult(new { success = false, message = "Invalid weather data format" });
+            }
+
+            // Validate the request data
+            if (string.IsNullOrWhiteSpace(addFavoriteRequest.CityName) || string.IsNullOrWhiteSpace(addFavoriteRequest.Country))
+            {
+                return new JsonResult(new { success = false, message = "City name and country are required" });
+            }
+
+            var favoriteCity = await _favoriteCityService.AddFavoriteAsync(
+                addFavoriteRequest.CityName,
+                addFavoriteRequest.Country,
+                addFavoriteRequest.Latitude,
+                addFavoriteRequest.Longitude);
+
+            _logger.LogInformation("Added favorite city: {CityName}, {Country}, Id: {Id}", 
+                favoriteCity.CityName, favoriteCity.Country, favoriteCity.Id);
+
+            return new JsonResult(new { 
+                success = true, 
+                message = $"Added {favoriteCity.DisplayName} to favorites",
+                favoriteId = favoriteCity.Id
+            });
+        }
+        catch (FavoriteCityServiceException ex)
+        {
+            _logger.LogWarning(ex, "Failed to add favorite city from request");
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            _logger.LogError(ex, "Invalid JSON format in add favorite request");
+            return new JsonResult(new { success = false, message = "Invalid request format" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error adding favorite city from request");
+            return new JsonResult(new { success = false, message = "Failed to add city to favorites" });
+        }
+    }
+
+    /// <summary>
+    /// Handles POST request to remove a city from favorites
+    /// </summary>
+    /// <param name="favoriteId">The ID of the favorite city to remove</param>
+    /// <returns>JSON result indicating success or failure</returns>
+    public async Task<IActionResult> OnPostRemoveFavoriteAsync(string favoriteId)
+    {
+        if (string.IsNullOrEmpty(favoriteId))
+        {
+            return new JsonResult(new { success = false, message = "Invalid favorite ID" });
+        }
+
+        try
+        {
+            var removed = await _favoriteCityService.RemoveFavoriteAsync(favoriteId);
+            
+            if (removed)
+            {
+                _logger.LogInformation("Removed favorite city with ID: {FavoriteId}", favoriteId);
+                return new JsonResult(new { success = true, message = "Removed from favorites" });
+            }
+            else
+            {
+                _logger.LogWarning("Favorite city not found for removal: {FavoriteId}", favoriteId);
+                return new JsonResult(new { success = false, message = "Favorite city not found" });
+            }
+        }
+        catch (FavoriteCityServiceException ex)
+        {
+            _logger.LogWarning(ex, "Failed to remove favorite city: {FavoriteId}", favoriteId);
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error removing favorite city: {FavoriteId}", favoriteId);
+            return new JsonResult(new { success = false, message = "Failed to remove city from favorites" });
+        }
+    }
+
+    /// <summary>
+    /// Handles POST request to load weather for a favorite city
+    /// </summary>
+    /// <param name="favoriteId">The ID of the favorite city</param>
+    /// <returns>Redirect to the same page with weather data loaded</returns>
+    public async Task<IActionResult> OnPostLoadFavoriteWeatherAsync(string favoriteId)
+    {
+        if (string.IsNullOrEmpty(favoriteId))
+        {
+            ErrorMessage = "Invalid favorite city";
+            await LoadFavoriteCitiesAsync();
+            return Page();
+        }
+
+        try
+        {
+            var favorite = await _favoriteCityService.GetFavoriteByIdAsync(favoriteId);
+            if (favorite == null)
+            {
+                ErrorMessage = "Favorite city not found";
+                await LoadFavoriteCitiesAsync();
+                return Page();
+            }
+
+            // Update last accessed time
+            await _favoriteCityService.UpdateLastAccessedAsync(favoriteId);
+
+            // Load weather for this city
+            CityName = favorite.CityName;
+            CurrentWeather = await _weatherService.GetCurrentWeatherAsync($"{favorite.CityName},{favorite.Country}");
+            
+            if (CurrentWeather != null)
+            {
+                SuccessMessage = $"Weather loaded for {favorite.DisplayName}";
+                await CheckIfCurrentCityIsFavoriteAsync();
+            }
+            else
+            {
+                ErrorMessage = $"Unable to load weather data for {favorite.DisplayName}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading weather for favorite city: {FavoriteId}", favoriteId);
+            ErrorMessage = "Failed to load weather data for favorite city";
+        }
+
+        await LoadFavoriteCitiesAsync();
+        return Page();
+    }
+
+    /// <summary>
+    /// Handles GET request to fetch favorites via AJAX
+    /// </summary>
+    /// <returns>JSON result with list of favorite cities</returns>
+    public async Task<IActionResult> OnGetFavoritesAsync()
+    {
+        try
+        {
+            var favorites = await _favoriteCityService.GetFavoritesAsync();
+            return new JsonResult(new { success = true, favorites = favorites });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading favorites via AJAX");
+            return new JsonResult(new { success = false, message = "Failed to load favorites" });
+        }
+    }
+
+    /// <summary>
+    /// Loads the list of favorite cities from the service
+    /// </summary>
+    private async Task LoadFavoriteCitiesAsync()
+    {
+        try
+        {
+            FavoriteCities = await _favoriteCityService.GetFavoritesAsync();
+            _logger.LogDebug("Loaded {Count} favorite cities", FavoriteCities.Count());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading favorite cities");
+            FavoriteCities = Enumerable.Empty<FavoriteCity>();
+        }
+    }
+
+    /// <summary>
+    /// Checks if the current weather city is already in favorites
+    /// </summary>
+    private async Task CheckIfCurrentCityIsFavoriteAsync()
+    {
+        if (CurrentWeather == null)
+        {
+            IsCurrentCityFavorite = false;
+            return;
+        }
+
+        try
+        {
+            IsCurrentCityFavorite = await _favoriteCityService.IsFavoriteAsync(
+                CurrentWeather.CityName, CurrentWeather.Country);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error checking if city is favorite: {CityName}", CurrentWeather.CityName);
+            IsCurrentCityFavorite = false;
+        }
     }
 
     /// <summary>

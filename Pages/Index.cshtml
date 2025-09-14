@@ -67,8 +67,20 @@
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="card weather-card">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Current Weather - @Model.CurrentWeather.CityName</h6>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-geo-alt-fill me-2"></i>Current Weather - @Model.CurrentWeather.CityName</span>
+                    @if (!Model.IsCurrentCityFavorite)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-light" id="addToFavoritesBtn" onclick="addToFavorites()">
+                            <i class="bi bi-heart me-1"></i>Add to Favorites
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="text-warning">
+                            <i class="bi bi-heart-fill me-1"></i>Favorited
+                        </span>
+                    }
                 </div>
                 <div class="card-body">
                     <div class="temperature-display">
@@ -196,27 +208,242 @@ else
     </div>
 }
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card weather-card">
-            <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="bi bi-star-fill me-2"></i>Favorite Cities</h6>
-            </div>
-            <div class="card-body">
-                <div class="placeholder-glow">
-                    <span class="placeholder col-4"></span>
-                    <span class="placeholder col-3"></span>
-                    <span class="placeholder col-5"></span>
-                </div>
-                <p class="text-muted mt-2 text-center">
-                    <i class="bi bi-heart me-2"></i>
-                    Favorite cities feature coming soon!
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Global variables for favorites management
+        let currentWeatherData = @(Model.CurrentWeather != null ? Html.Raw(System.Text.Json.JsonSerializer.Serialize(new { 
+            cityName = Model.CurrentWeather.CityName, 
+            country = Model.CurrentWeather.Country,
+            latitude = Model.CurrentWeather.Latitude,
+            longitude = Model.CurrentWeather.Longitude
+        })) : "null");
+
+        // Load favorites when offcanvas is shown
+        document.getElementById('favoritesOffcanvas').addEventListener('shown.bs.offcanvas', function () {
+            loadFavorites();
+        });
+
+        // Function to add current city to favorites
+        async function addToFavorites() {
+            if (!currentWeatherData) {
+                showAlert('No weather data available to add to favorites', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('addToFavoritesBtn');
+            const originalContent = btn.innerHTML;
+            
+            try {
+                // Show loading state
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Adding...';
+                btn.disabled = true;
+
+                const response = await fetch('/Index?handler=AddFavorite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        cityName: currentWeatherData.cityName,
+                        country: currentWeatherData.country,
+                        latitude: currentWeatherData.latitude,
+                        longitude: currentWeatherData.longitude
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    
+                    // Update the button to show favorited state
+                    btn.parentElement.innerHTML = '<span class="text-warning"><i class="bi bi-heart-fill me-1"></i>Favorited</span>';
+                    
+                    // Reload favorites if the offcanvas is open
+                    if (document.getElementById('favoritesOffcanvas').classList.contains('show')) {
+                        loadFavorites();
+                    }
+                } else {
+                    showAlert(result.message || 'Failed to add to favorites', 'danger');
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error adding to favorites:', error);
+                showAlert('An error occurred while adding to favorites', 'danger');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+
+        // Function to remove from favorites
+        async function removeFromFavorites(favoriteId, cityName) {
+            if (!confirm(`Remove ${cityName} from favorites?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Index?handler=RemoveFavorite&favoriteId=${encodeURIComponent(favoriteId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    loadFavorites(); // Reload the favorites list
+                } else {
+                    showAlert(result.message || 'Failed to remove from favorites', 'danger');
+                }
+            } catch (error) {
+                console.error('Error removing from favorites:', error);
+                showAlert('An error occurred while removing from favorites', 'danger');
+            }
+        }
+
+        // Function to load weather for a favorite city
+        async function loadFavoriteWeather(favoriteId, cityName) {
+            try {
+                // Show loading in the specific favorite card
+                const card = document.querySelector(`[data-favorite-id="${favoriteId}"]`);
+                if (card) {
+                    const btn = card.querySelector('.load-weather-btn');
+                    if (btn) {
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
+                        btn.disabled = true;
+                    }
+                }
+
+                // Submit form to load weather
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Index?handler=LoadFavoriteWeather';
+                
+                const favoriteIdInput = document.createElement('input');
+                favoriteIdInput.type = 'hidden';
+                favoriteIdInput.name = 'favoriteId';
+                favoriteIdInput.value = favoriteId;
+                
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                form.appendChild(favoriteIdInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+                form.submit();
+                
+            } catch (error) {
+                console.error('Error loading favorite weather:', error);
+                showAlert('An error occurred while loading weather data', 'danger');
+            }
+        }
+
+        // Function to load and display favorites
+        async function loadFavorites() {
+            const container = document.getElementById('favoritesContainer');
+            
+            try {
+                // Show loading state
+                container.innerHTML = `
+                    <div class="d-flex justify-content-center align-items-center p-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading favorites...</span>
+                        </div>
+                    </div>
+                `;
+
+                // Fetch favorites from server
+                const response = await fetch('/Index?handler=Favorites');
+                const result = await response.json();
+                
+                if (result.success && result.favorites && result.favorites.length > 0) {
+                    let favoritesHtml = '<div class="p-3">';
+                    
+                    result.favorites.forEach(favorite => {
+                        favoritesHtml += `
+                            <div class="card mb-3 favorite-card" data-favorite-id="${favorite.id}">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">${favorite.cityName}</h6>
+                                            <small class="text-muted">${favorite.country}</small>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-primary load-weather-btn" onclick="loadFavoriteWeather('${favorite.id}', '${favorite.cityName}')">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" onclick="removeFromFavorites('${favorite.id}', '${favorite.displayName}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="bi bi-clock me-1"></i>Added: ${new Date(favorite.dateAdded).toLocaleDateString()}
+                                    </small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    favoritesHtml += '</div>';
+                    container.innerHTML = favoritesHtml;
+                } else {
+                    container.innerHTML = `
+                        <div class="text-center p-4">
+                            <i class="bi bi-heart text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3 text-muted">No favorites yet</h5>
+                            <p class="text-muted">Search for a city and add it to favorites to see it here.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading favorites:', error);
+                container.innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-danger">Error loading favorites</h5>
+                        <p class="text-muted">Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to show alert messages
+        function showAlert(message, type) {
+            const alertContainer = document.querySelector('.container main');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show alert-custom" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Remove existing alerts
+            const existingAlerts = alertContainer.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            // Add new alert at the beginning
+            alertContainer.insertAdjacentHTML('afterbegin', alertHtml);
+            
+            // Auto-dismiss success alerts after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    const alert = alertContainer.querySelector('.alert');
+                    if (alert) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 3000);
+            }
+        }
+    </script>
 }

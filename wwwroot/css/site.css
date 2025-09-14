@@ -115,3 +115,97 @@ body {
     font-size: 2rem;
   }
 }
+
+/* Favorites Offcanvas Styles */
+.favorite-card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.favorite-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.offcanvas {
+  width: 350px !important;
+}
+
+@media (max-width: 576px) {
+  .offcanvas {
+    width: 300px !important;
+  }
+}
+
+.offcanvas-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.favorite-card .btn-group-sm > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Navbar favorites button */
+.navbar .btn-outline-primary {
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.navbar .btn-outline-primary:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+/* Weather card header improvements */
+.card-header .btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive improvements for favorites button in weather card */
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .card-header .btn {
+    margin-top: 0.5rem;
+    align-self: flex-end;
+  }
+  
+  .card-header span:first-child {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Loading state improvements */
+.spinner-border-sm {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Alert improvements */
+.alert-custom {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty state styling */
+.text-center i[style*="font-size: 3rem"] {
+  opacity: 0.5;
+}
+
+/* Favorite card content improvements */
+.favorite-card .card-body {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.favorite-card:hover .card-body {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+}
